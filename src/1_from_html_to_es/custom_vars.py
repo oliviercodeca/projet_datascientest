@@ -4,7 +4,7 @@ def vars(var):
     if var == "db_path":
         return "/home/utilisateur/Documents/datascientest/projet_data/projet_de/src/2_from_es_to_sqlite/project.db"
     if var == "file_path_push_to_es":
-        return "/home/utilisateur/Documents/datascientest/projet_data/projet_de/src/1_from_html_to_es/files_to_import_to_es"
+        return "./files_to_import_to_es"
 
     elif var == "default_category_name":
         return [
