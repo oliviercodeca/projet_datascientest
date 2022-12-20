@@ -1,0 +1,63 @@
+version: "3.0"
+
+services:
+
+  elasticsearch:
+    container_name: es-container
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.1.2
+    environment:
+      - xpack.security.enabled=false
+      - "discovery.type=single-node"
+    networks:
+      - es-net
+    ports:
+      - 9200:9200
+
+  kibana:
+    container_name: kb-container
+    image: docker.elastic.co/kibana/kibana:8.1.2
+    environment:
+      - ELASTICSEARCH_HOSTS=http://es-container:9200
+    networks:
+      - es-net
+    depends_on:
+      - elasticsearch
+    ports:
+      - 5601:5601
+
+  scraping_trustpilot:
+    container_name: scraping_trustpilot_container
+    image: scraping_trustpilot:latest
+    networks:
+      - es-net
+    depends_on:
+      - kibana
+    volumes:
+      - ./files_to_import_to_es:/home/files_to_import_to_es
+
+  create_tables:
+    container_name: tables_container
+    image: create_tables:latest
+    networks:
+      - es-net
+    depends_on:
+      - scraping_trustpilot
+    volumes:
+      - db_volume:/home/sqlite_db
+
+  insert_data:
+    container_name: insert_data_container
+    image: insert_data:latest
+    networks:
+      - es-net
+    depends_on:
+      - create_tables
+    volumes:
+      - db_volume:/home/sqlite_db
+
+networks:
+  es-net:
+    driver: bridge
+
+volumes:
+  db_volume:
